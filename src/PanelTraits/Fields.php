@@ -164,15 +164,29 @@ trait Fields
         return false;
     }
 
-    /**
-     * Order the fields in a certain way.
-     *
-     * @param [string] Column name.
-     * @param [attributes and values array]
-     */
+  /**
+   * Order the fields in a certain way.
+   * Any fields not explicitly ordered by the $fields array will be added after the ordered ones.
+   * 
+   * @param array $fields Array of field names in required display order.
+   */
     public function setFieldOrder($fields)
     {
-        // TODO
+        $ordered_create = [];
+        $ordered_update = [];
+
+        foreach (['create', 'update'] as $action) {
+            foreach ($fields as $field) {
+                if ($settings = array_get($this->{$action . '_fields'}, $field)) {
+                    ${'ordered_' . $action}[$field] = $settings;
+                    array_forget($this->{$action . '_fields'}, $field);
+                }
+            }
+
+            $this->{$action . '_fields'} = ${'ordered_' . $action} + $this->{$action . '_fields'};
+        }
+
+        return $this;
     }
 
     // ALIAS of setFieldOrder($fields)
